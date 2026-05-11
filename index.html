@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Multiverse Museum</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:    #04040A;
+    --deep:     #0A0A18;
+    --panel:    #0F0F20;
+    --border:   #1E1E38;
+    --gold:     #FFD700;
+    --gold-dim: #B8960C;
+    --red:      #E8003D;
+    --cyan:     #00E5FF;
+    --white:    #F0F0FF;
+    --muted:    #6B6B90;
+    --glow-gold: 0 0 24px rgba(255,215,0,0.5);
+    --glow-red:  0 0 24px rgba(232,0,61,0.6);
+    --glow-cyan: 0 0 24px rgba(0,229,255,0.5);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Rajdhani', sans-serif;
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  /* ── SCAN LINES ── */
+  body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 1;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    overflow: hidden;
+    z-index: 2;
+  }
+
+  .hero-bg {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(232,0,61,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 20% 100%, rgba(0,229,255,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 80% at 80% 100%, rgba(255,215,0,0.08) 0%, transparent 50%),
+      var(--black);
+  }
+
+  /* animated grid */
+  .hero-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,215,0,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,215,0,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: gridPulse 8s ease-in-out infinite;
+  }
+
+  @keyframes gridPulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+
+  .hero-content { position: relative; z-index: 2; max-width: 900px; }
+
+  .universe-tag {
+    display: inline-block;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    color: var(--gold);
+    border: 1px solid var(--gold-dim);
+    padding: 0.4rem 1.2rem;
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+    animation: fadeInDown 0.8s ease both;
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', cursive;
+    font-size: clamp(4rem, 14vw, 10rem);
+    line-height: 0.9;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.5rem;
+    animation: fadeInUp 0.9s ease 0.2s both;
+  }
+
+  .title-ai    { color: var(--gold); text-shadow: var(--glow-gold); display: block; }
+  .title-multi { color: var(--white); display: block; }
+  .title-verse { color: var(--red);   text-shadow: var(--glow-red); display: block; }
+  .title-museum {
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255,255,255,0.3);
+    display: block;
+    font-size: clamp(2rem, 6vw, 5rem);
+  }
+
+  .hero-sub {
+    font-size: clamp(0.95rem, 2.5vw, 1.2rem);
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-top: 1.5rem;
+    animation: fadeInUp 0.9s ease 0.4s both;
+  }
+
+  .hero-sub span { color: var(--cyan); }
+
+  .hero-divider {
+    width: 120px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), var(--red), transparent);
+    margin: 2rem auto;
+    animation: expandWidth 1.2s ease 0.6s both;
+  }
+
+  .hero-scroll {
+    position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+    animation: fadeInUp 1s ease 1s both;
+    z-index: 2;
+  }
+
+  .hero-scroll span {
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-family: 'Orbitron', sans-serif;
+  }
+
+  .scroll-line {
+    width: 1px; height: 50px;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.3; transform: scaleY(1); }
+    50%       { opacity: 1;   transform: scaleY(1.2); }
+  }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    position: relative; z-index: 2;
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,10,24,0.8);
+    backdrop-filter: blur(10px);
+  }
+
+  .stat-cell {
+    padding: 1.5rem 2rem;
+    text-align: center;
+    border-right: 1px solid var(--border);
+  }
+  .stat-cell:last-child { border-right: none; }
+
+  .stat-num {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 3rem;
+    line-height: 1;
+    color: var(--gold);
+    text-shadow: var(--glow-gold);
+  }
+
+  .stat-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: 'Orbitron', sans-serif;
+    margin-top: 0.25rem;
+  }
+
+  /* ── GALLERY SECTION ── */
+  .gallery-section {
+    position: relative; z-index: 2;
+    padding: 6rem 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 5rem;
+  }
+
+  .section-eyebrow {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.4em;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', cursive;
+    font-size: clamp(3rem, 7vw, 5.5rem);
+    line-height: 1;
+    letter-spacing: 0.05em;
+  }
+
+  .section-title em { color: var(--gold); font-style: normal; }
+
+  .section-rule {
+    width: 80px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 1.5rem auto 0;
+  }
+
+  /* ── EXHIBIT CARDS ── */
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 2px;
+  }
+
+  .exhibit-card {
+    position: relative;
+    background: var(--panel);
+    overflow: hidden;
+    cursor: pointer;
+    group: true;
+    transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+  }
+
+  .exhibit-card:hover { transform: scale(1.01) translateY(-4px); z-index: 3; }
+
+  /* accent corner lines */
+  .exhibit-card::before,
+  .exhibit-card::after {
+    content: '';
+    position: absolute;
+    width: 24px; height: 24px;
+    z-index: 5;
+    transition: width 0.4s ease, height 0.4s ease;
+  }
+
+  .exhibit-card::before {
+    top: 0; left: 0;
+    border-top: 2px solid var(--gold);
+    border-left: 2px solid var(--gold);
+  }
+
+  .exhibit-card::after {
+    bottom: 0; right: 0;
+    border-bottom: 2px solid var(--gold);
+    border-right: 2px solid var(--gold);
+  }
+
+  .exhibit-card:hover::before,
+  .exhibit-card:hover::after {
+    width: 48px; height: 48px;
+  }
+
+  .exhibit-card.dc-card::before,
+  .exhibit-card.dc-card::after { border-color: var(--cyan); }
+
+  .exhibit-card.chaos-card::before,
+  .exhibit-card.chaos-card::after { border-color: var(--red); }
+
+  /* image area */
+  .card-image {
+    position: relative;
+    aspect-ratio: 3/4;
+    overflow: hidden;
+    background: var(--deep);
+  }
+
+  .card-image img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.16,1,0.3,1), filter 0.4s ease;
+    filter: saturate(0.85) contrast(1.05);
+  }
+
+  .exhibit-card:hover .card-image img {
+    transform: scale(1.06);
+    filter: saturate(1.1) contrast(1.1);
+  }
+
+  /* placeholder when no image */
+  .card-image-placeholder {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 1rem;
+    background:
+      linear-gradient(135deg, var(--deep) 0%, var(--panel) 100%);
+  }
+
+  .placeholder-icon {
+    font-size: 4rem;
+    opacity: 0.4;
+    animation: iconPulse 3s ease-in-out infinite;
+  }
+
+  .placeholder-prompt {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-align: center;
+    padding: 0 2rem;
+    line-height: 1.8;
+    text-transform: uppercase;
+  }
+
+  @keyframes iconPulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50%       { opacity: 0.6; transform: scale(1.05); }
+  }
+
+  /* overlay on hover */
+  .card-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(4,4,10,0.95) 0%, rgba(4,4,10,0.3) 50%, transparent 100%);
+    display: flex; flex-direction: column;
+    justify-content: flex-end;
+    padding: 1.5rem;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 2;
+  }
+
+  .exhibit-card:hover .card-overlay { opacity: 1; }
+
+  .overlay-prompt-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.55rem;
+    letter-spacing: 0.25em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  .overlay-prompt-text {
+    font-size: 0.85rem;
+    color: rgba(240,240,255,0.8);
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  /* exhibit number badge */
+  .exhibit-num {
+    position: absolute;
+    top: 1rem; right: 1rem;
+    font-family: 'Bebas Neue', cursive;
+    font-size: 1rem;
+    color: var(--gold);
+    background: rgba(4,4,10,0.8);
+    border: 1px solid var(--gold-dim);
+    padding: 0.1rem 0.5rem;
+    z-index: 3;
+    letter-spacing: 0.1em;
+  }
+
+  .dc-card .exhibit-num { color: var(--cyan); border-color: var(--cyan); }
+  .chaos-card .exhibit-num { color: var(--red); border-color: var(--red); }
+
+  /* card info */
+  .card-info {
+    padding: 1.5rem;
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    position: relative;
+  }
+
+  .card-info::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold), var(--red), transparent);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  .exhibit-card:hover .card-info::before { opacity: 1; }
+
+  .card-universe-tags {
+    display: flex; gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .universe-badge {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.55rem;
+    letter-spacing: 0.15em;
+    padding: 0.25rem 0.6rem;
+    border-radius: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  .badge-dc   { background: rgba(0,229,255,0.1); border: 1px solid rgba(0,229,255,0.4); color: var(--cyan); }
+  .badge-marvel { background: rgba(232,0,61,0.1); border: 1px solid rgba(232,0,61,0.4); color: var(--red); }
+  .badge-mixed { background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.4); color: var(--gold); }
+
+  .card-name {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 2rem;
+    line-height: 1;
+    letter-spacing: 0.05em;
+    color: var(--white);
+    margin-bottom: 0.4rem;
+  }
+
+  .card-chars {
+    font-size: 0.8rem;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+
+  .card-desc {
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+
+  .card-tool {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-transform: uppercase;
+    border-top: 1px solid var(--border);
+    padding-top: 0.75rem;
+  }
+
+  .tool-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    animation: dotBlink 2s ease-in-out infinite;
+  }
+
+  @keyframes dotBlink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+  }
+
+  /* ── FEATURED WIDE CARD (card 5) ── */
+  .gallery-grid .exhibit-card.featured {
+    grid-column: 1 / -1;
+  }
+
+  .featured .card-image {
+    aspect-ratio: 21/9;
+  }
+
+  /* ── ABOUT SECTION ── */
+  .about-section {
+    position: relative; z-index: 2;
+    border-top: 1px solid var(--border);
+    padding: 5rem 2rem;
+    background: linear-gradient(to bottom, var(--black), var(--deep));
+  }
+
+  .about-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  .about-label {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 4rem;
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--gold-dim);
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+  }
+
+  .about-content h2 {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 2.5rem;
+    letter-spacing: 0.05em;
+    color: var(--gold);
+    margin-bottom: 1rem;
+  }
+
+  .about-content p {
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.8;
+    margin-bottom: 1rem;
+  }
+
+  .about-content p strong { color: var(--white); }
+
+  .tech-tags {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .tech-tag {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    padding: 0.3rem 0.8rem;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+  }
+
+  .tech-tag:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative; z-index: 2;
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    display: flex;
+    align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 1rem;
+    background: var(--black);
+  }
+
+  .footer-brand {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 1.5rem;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+  }
+
+  .footer-meta {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-transform: uppercase;
+    text-align: right;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes expandWidth {
+    from { width: 0; opacity: 0; }
+    to   { width: 120px; opacity: 1; }
+  }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.16,1,0.3,1);
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .stats-bar { grid-template-columns: 1fr; }
+    .stat-cell { border-right: none; border-bottom: 1px solid var(--border); }
+    .about-inner { grid-template-columns: 1fr; gap: 2rem; }
+    .about-label { writing-mode: horizontal-tb; font-size: 2rem; }
+    .gallery-grid { grid-template-columns: 1fr; }
+    .featured .card-image { aspect-ratio: 3/4; }
+    footer { flex-direction: column; text-align: center; }
+    .footer-meta { text-align: center; }
+  }
+
+  /* ── CUSTOM CURSOR TRAIL ── */
+  .cursor-dot {
+    width: 8px; height: 8px;
+    background: var(--gold);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s ease;
+    mix-blend-mode: screen;
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor-dot" id="cursorDot"></div>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+
+  <div class="hero-content">
+    <div class="universe-tag">Exhibition No. 001 · Generative AI Art</div>
+
+    <h1 class="hero-title">
+      <span class="title-ai">AI</span>
+      <span class="title-multi">MULTIVERSE</span>
+      <span class="title-verse">MUSEUM</span>
+      <span class="title-museum">EST. 2025</span>
+    </h1>
+
+    <div class="hero-divider"></div>
+
+    <p class="hero-sub">
+      Where <span>DC</span> and <span>Marvel</span> Universes Collide Through AI
+    </p>
+  </div>
+
+  <div class="hero-scroll">
+    <span>Explore</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ── STATS BAR ── -->
+<div class="stats-bar">
+  <div class="stat-cell">
+    <div class="stat-num">5</div>
+    <div class="stat-label">AI Artworks</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-num">10</div>
+    <div class="stat-label">Characters Fused</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-num">2</div>
+    <div class="stat-label">Universes Merged</div>
+  </div>
+</div>
+
+<!-- ── GALLERY ── -->
+<section class="gallery-section">
+  <div class="section-header reveal">
+    <div class="section-eyebrow">The Collection</div>
+    <h2 class="section-title">AI-Generated <em>Fusions</em></h2>
+    <div class="section-rule"></div>
+  </div>
+
+  <div class="gallery-grid">
+
+    <!-- 01 The Dark Avenger -->
+    <div class="exhibit-card dc-card reveal">
+      <div class="card-image">
+        <img src="darkavenger.png" alt="The Dark Avenger — Batman fused with Iron Man"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+        <div class="card-image-placeholder" style="display:none;">
+          <div class="placeholder-icon">🦇</div>
+          <div class="placeholder-prompt">Batman fused with Iron Man · futuristic armored batsuit · glowing arc reactor · cinematic comic book art</div>
+        </div>
+        <div class="card-overlay">
+          <div class="overlay-prompt-label">AI Prompt</div>
+          <div class="overlay-prompt-text">"Batman fused with Iron Man, futuristic armored batsuit, glowing arc reactor, cinematic comic book art"</div>
+        </div>
+        <div class="exhibit-num">EX·01</div>
+      </div>
+      <div class="card-info">
+        <div class="card-universe-tags">
+          <span class="universe-badge badge-dc">DC</span>
+          <span class="universe-badge badge-marvel">Marvel</span>
+        </div>
+        <div class="card-name">The Dark Avenger</div>
+        <div class="card-chars">Batman + Iron Man</div>
+        <div class="card-desc">An AI-generated fusion combining Batman's dark vigilante aesthetic with Iron Man's advanced futuristic armor technology.</div>
+        <div class="card-tool">
+          <div class="tool-dot"></div>
+          ChatGPT / DALL·E
+        </div>
+      </div>
+    </div>
+
+    <!-- 02 Chaos Witch -->
+    <div class="exhibit-card chaos-card reveal">
+      <div class="card-image">
+        <img src="chaoswitch.png" alt="Chaos Witch — Harley Quinn fused with Scarlet Witch"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+        <div class="card-image-placeholder" style="display:none;">
+          <div class="placeholder-icon">🃏</div>
+          <div class="placeholder-prompt">Harley Quinn + Scarlet Witch · chaotic red magic powers · cinematic comic art style</div>
+        </div>
+        <div class="card-overlay">
+          <div class="overlay-prompt-label">AI Prompt</div>
+          <div class="overlay-prompt-text">"Harley Quinn combined with Scarlet Witch, chaotic red magic powers, cinematic comic art style"</div>
+        </div>
+        <div class="exhibit-num">EX·02</div>
+      </div>
+      <div class="card-info">
+        <div class="card-universe-tags">
+          <span class="universe-badge badge-dc">DC</span>
+          <span class="universe-badge badge-marvel">Marvel</span>
+        </div>
+        <div class="card-name">Chaos Witch</div>
+        <div class="card-chars">Harley Quinn + Scarlet Witch</div>
+        <div class="card-desc">A chaotic blend of Harley Quinn's unpredictable energy and Scarlet Witch's powerful magical abilities.</div>
+        <div class="card-tool">
+          <div class="tool-dot"></div>
+          ChatGPT / DALL·E
+        </div>
+      </div>
+    </div>
+
+    <!-- 03 Storm King -->
+    <div class="exhibit-card reveal">
+      <div class="card-image">
+        <img src="stormking.png" alt="Storm King — Thor fused with Aquaman"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+        <div class="card-image-placeholder" style="display:none;">
+          <div class="placeholder-icon">⚡</div>
+          <div class="placeholder-prompt">Thor fused with Aquaman · lightning trident hammer · ocean storm armor · epic fantasy comic art</div>
+        </div>
+        <div class="card-overlay">
+          <div class="overlay-prompt-label">AI Prompt</div>
+          <div class="overlay-prompt-text">"Thor fused with Aquaman, lightning trident hammer, ocean storm armor, epic fantasy comic art"</div>
+        </div>
+        <div class="exhibit-num">EX·03</div>
+      </div>
+      <div class="card-info">
+        <div class="card-universe-tags">
+          <span class="universe-badge badge-marvel">Marvel</span>
+          <span class="universe-badge badge-dc">DC</span>
+        </div>
+        <div class="card-name">Storm King</div>
+        <div class="card-chars">Thor + Aquaman</div>
+        <div class="card-desc">An AI interpretation of Thor and Aquaman merged into a powerful ruler controlling both the ocean and storms.</div>
+        <div class="card-tool">
+          <div class="tool-dot"></div>
+          ChatGPT / DALL·E
+        </div>
+      </div>
+    </div>
+
+    <!-- 04 Velocity Web -->
+    <div class="exhibit-card chaos-card reveal">
+      <div class="card-image">
+        <img src="velocityweb.png" alt="Velocity Web — Spider-Man fused with The Flash"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+        <div class="card-image-placeholder" style="display:none;">
+          <div class="placeholder-icon">🕷️</div>
+          <div class="placeholder-prompt">Spider-Man merged with The Flash · red lightning web suit · speed force energy · comic action scene</div>
+        </div>
+        <div class="card-overlay">
+          <div class="overlay-prompt-label">AI Prompt</div>
+          <div class="overlay-prompt-text">"Spider-Man merged with The Flash, red lightning web suit, speed force energy, comic action scene"</div>
+        </div>
+        <div class="exhibit-num">EX·04</div>
+      </div>
+      <div class="card-info">
+        <div class="card-universe-tags">
+          <span class="universe-badge badge-marvel">Marvel</span>
+          <span class="universe-badge badge-dc">DC</span>
+        </div>
+        <div class="card-name">Velocity Web</div>
+        <div class="card-chars">Spider-Man + The Flash</div>
+        <div class="card-desc">A high-speed superhero fusion combining Spider-Man's agility with The Flash's speed-force abilities.</div>
+        <div class="card-tool">
+          <div class="tool-dot"></div>
+          ChatGPT / DALL·E
+        </div>
+      </div>
+    </div>
+
+    <!-- 05 God of Chaos — featured wide -->
+    <div class="exhibit-card chaos-card featured reveal">
+      <div class="card-image">
+        <img src="godofchaos.png" alt="God of Chaos — Joker fused with Loki"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+        <div class="card-image-placeholder" style="display:none;">
+          <div class="placeholder-icon">🎭</div>
+          <div class="placeholder-prompt">Joker fused with Loki · green and purple villain design · cinematic dark fantasy comic style</div>
+        </div>
+        <div class="card-overlay">
+          <div class="overlay-prompt-label">AI Prompt</div>
+          <div class="overlay-prompt-text">"Joker fused with Loki, green and purple villain design, cinematic dark fantasy comic style"</div>
+        </div>
+        <div class="exhibit-num">EX·05</div>
+      </div>
+      <div class="card-info">
+        <div class="card-universe-tags">
+          <span class="universe-badge badge-dc">DC</span>
+          <span class="universe-badge badge-marvel">Marvel</span>
+          <span class="universe-badge badge-mixed">Featured</span>
+        </div>
+        <div class="card-name">God of Chaos</div>
+        <div class="card-chars">The Joker + Loki</div>
+        <div class="card-desc">A fusion of two chaotic masterminds reimagined through AI with a dark cinematic villain aesthetic. Where Gotham's anarchy meets Asgardian mischief.</div>
+        <div class="card-tool">
+          <div class="tool-dot"></div>
+          ChatGPT / DALL·E
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── ABOUT ── -->
+<section class="about-section">
+  <div class="about-inner reveal">
+    <div class="about-label">About</div>
+    <div class="about-content">
+      <h2>The AI Behind the Art</h2>
+      <p>
+        The <strong>AI Multiverse Museum</strong> is a generative art project exploring what happens when AI is asked to bridge two competing fictional universes — DC and Marvel — through character fusion.
+      </p>
+      <p>
+        Each piece was generated using <strong>ChatGPT / DALL·E</strong>, guided by carefully constructed prompts designed to balance both characters' visual identities, power sets, and aesthetic tones into a single coherent image.
+      </p>
+      <p>
+        The results reveal something interesting: AI doesn't just blend surfaces. Given detailed prompts, it finds the <strong>conceptual overlap</strong> between characters — the dark brooding shared by Batman and Iron Man, the chaos energy linking Harley Quinn and Scarlet Witch — and renders those shared qualities forward.
+      </p>
+      <div class="tech-tags">
+        <span class="tech-tag">Generative AI</span>
+        <span class="tech-tag">DALL·E</span>
+        <span class="tech-tag">ChatGPT</span>
+        <span class="tech-tag">Prompt Engineering</span>
+        <span class="tech-tag">DC Universe</span>
+        <span class="tech-tag">Marvel Universe</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-brand">AI Multiverse Museum</div>
+  <div class="footer-meta">
+    5 Artworks · 10 Characters · 2 Universes<br>
+    Generative AI Art · ChatGPT / DALL·E · 2025
+  </div>
+</footer>
+
+<script>
+  // Custom cursor
+  const dot = document.getElementById('cursorDot');
+  document.addEventListener('mousemove', e => {
+    dot.style.left = e.clientX + 'px';
+    dot.style.top  = e.clientY + 'px';
+  });
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+
+  // Staggered gallery card reveals
+  document.querySelectorAll('.gallery-grid .exhibit-card').forEach((card, i) => {
+    card.style.transitionDelay = (i * 0.1) + 's';
+  });
+</script>
+</body>
+</html>
